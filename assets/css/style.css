@@ -1,12 +1,22 @@
 /* Dave Jagodowski - HW06 - Giphy project */
 
-#addFishButtons {
+#container {
+	min-width: 600px;
+	min-height: 640px;
+	border: 2px dashed black;
+	margin: 20px;
+}
+#addFishDiv {
 	float: right;
+	width: 20%;
 	font-size: 16px;
 	font-weight: bold;
 	font-family: "arial", "helvetica", "sans-serif";
     margin-right: 20px;
     margin-top: 20px;
+    padding: 20px;
+    border: 1px dotted green;
+
 }
 
 #fishButtons {
@@ -29,9 +39,21 @@
 	box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
 
-.buttons-view {
-	border: 3px solid black;
+#buttonsView {
+	float: left;
+	/*clear: both; */
+	border: 3px solid gold;
+	width: 65%;
+    margin-left: 10px;
+    margin-top: 20px;
 }
+#gifView { 
+	clear: all;
+	border: 3px solid purple;
+	width: 65%;
+    margin-left: 10px;
+    margin-top: 20px;
+ }
 
 .fishClass {
 	background-color: #6DC539;
