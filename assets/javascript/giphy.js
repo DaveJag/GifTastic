@@ -20,8 +20,7 @@ $(document).ready(function(){
 
   //Create another div to contain the gif images 
   var gifPlace = $("<div id='gifView'>");
-  //Places this new div after the buttonsView div.
-  $("#buttonsView").append(gifPlace);
+  $("#container").append(gifPlace);
 
 
 
@@ -47,7 +46,7 @@ $(document).ready(function(){
       } // end for loop
     }
 
-    // Create an event handler for when a fish button is clicked
+    // Create an event handler for when the submit button is clicked
       $("#addFish").on("click", function(event) {
       	//prevent the Submit button from submitting a form.
         event.preventDefault();
@@ -69,73 +68,49 @@ $(document).ready(function(){
 
       // displayGifs function re-renders the HTML to display the appropriate content
       function displayGifs() {
-        console.log("function displayGifs is called.");
-
+      //  console.log("function displayGifs is called.");
         var gifClip = $(this).attr("data-name"); // "data" is the name of the object from GIPHY API
+        var fishClip = "fishing+"+gifClip; //Sets the context of the search to fishing
+        console.log("fishClip = " + fishClip);
         var apiKey = "72d9ab225f604dd886525d7f63eb5f65"; //my personal API key
         var gifLimit = 10; //number of gif files to retrieve
         var gifRating = "g"; //filters results by the specified rating.
-        var queryURL = "http://api.giphy.com/v1/gifs/search?q="+gifClip+"&apikey="+apiKey+"&limit="+gifLimit;
+        var queryURL = "http://api.giphy.com/v1/gifs/search?q="+fishClip+"&apikey="+apiKey+"&limit="+gifLimit;
       console.log("URL is: " + queryURL);
+
+      //Clear any images currently displayed
+      $("#gifView").html("");
+
+
         // Creating an AJAX call for the specific button being clicked
         $.ajax({
           url: queryURL,
           method: "GET"
         }).done(function(response) {
- console.log(response);
-          // Creating a div to hold the gifs
-          var gifDiv = $("<div class='gifClass'>");
+           console.log(response);
+          // Storing the rating data from the API
 
-          // Storing the rating data
-          var rating = response.data[0].rating;
+          //Write out all the contents of the response object.
+          gifPlace.prepend("<p>");
+          for (var i=0; i<gifLimit; i++) {
+            //get the rating from the API
+            var rating = response.data[i].rating;
+            //get the URL for the image from the API
+            var gifImg = response.data[i].images.fixed_height_small_still.url;
+            //write output to the div            
+            $("#gifView").append("Rating = " + rating + "<br>" + "<img src=" + gifImg + "><br>");
+            
+          } //end for loop
+          gifPlace.append("</p>");
+          $("#container").append(gifPlace);
 
-          // Creating an element to have the rating displayed
-          var pOne = $("<p>").text("Rating: " + rating);
 
-          // Displaying the rating
-          gifDiv.append(pOne);
-
-           var gifType = response.data[0].type 
-           console.log("gifImg = " + gifType);
-           var addType = $("<p>").text("Type is: " + gifType);
-           gifDiv.prepend(addType);
-           
-           var gifImg = response.data[0].images.fixed_height_still.url;
-           console.log("source = " + gifImg);
-           var addImg = $("<img>").attr("src", gifImg);
-           gifDiv.prepend(addImg);
-
-/*          // Retrieving the URL for the image
-          var gifURL = response.data[0].url;  //From GIPHY docs. Not 100% sure of this.
-console.log("gifURL = " + gifURL);
-          // Creating an element to hold the image
-          var addLink = $("<img>").attr("src", gifURL);
-
-          // Appending the image
-          gifDiv.append(addLink);
-*/
-          // Putting the gif above the previous movies
-          $("#container").append(gifDiv);
         });
 
       }
 
  // Calling the renderButtons function to display the intial buttons
       renderButtons();
-//javascript, jQuery
-/*
-var xhr = $.get("http://api.giphy.com/v1/gifs/search?q=ryan+gosling&api_key=YOUR_API_KEY&limit=5");
-xhr.done(function(data) { console.log("success got data", data); }); 
-
-$.ajax({
-  url: "http://api.giphy.com/v1/gifs/search?q=ryan+gosling&api_key=72d9ab225f604dd886525d7f63eb5f65&limit=5"
-  method: "GET"
-}).done(function(response) {
-	console.log(response);
-}); 
-*/
-
-
 
 
 });  //end document ready
