@@ -4,7 +4,11 @@ $(document).ready(function(){
    
   //Create an initial array of fish
   var fishArray = ["Trout", "Salmon", "Bass", "Catfish"];
-  
+  var ratingArray = [];
+  var stillArray = [];
+  var animatedArray = [];
+  var imageObj = new Object;
+  var gifLimit = 10; //number of gif files to retrieve
 
   //Create a new div "buttonsView" to contain the buttons
   //Assign a variable to a new div element.
@@ -17,9 +21,6 @@ $(document).ready(function(){
   buttonsDiv.append(p1);
   //insert new div into DOM
   $("#container").prepend(buttonsDiv);
-
-
-
 
 
   // Function for displaying new buttons
@@ -56,28 +57,24 @@ $(document).ready(function(){
         fishArray.push(newFish);
 
         // Calling renderButtons which handles the processing of our movie array
-        renderButtons();
+//        renderButtons();
       });
 
       // Adding a click event listener to all button elements with a class of "fishClass"
-      $(document).on("click", ".fishClass", displayGifs);
+      $(document).on("click", ".fishClass", getGifs);
       
 
 // ---------------------------------------------------------------//
 
-      // displayGifs function re-renders the HTML to display the appropriate content
-      function displayGifs() {
-      //  console.log("function displayGifs is called.");
+      // getGifs function peforms the AJAX call to retrieve the content
+      function getGifs() {
         var gifClip = $(this).attr("data-name"); // "data" is the name of the object from GIPHY API
         var fishClip = "fishing+" + gifClip; //Adding "fishing" to all search strings to keep it in  context.
-        console.log("fishClip = " + fishClip);
         var apiKey = "72d9ab225f604dd886525d7f63eb5f65"; //my personal API key
-        var gifLimit = 10; //number of gif files to retrieve
         var gifRating = "g"; //filters results by the specified rating.
         var queryURL = "http://api.giphy.com/v1/gifs/search?q="+fishClip+"&apikey="+apiKey+"&limit="+gifLimit;
-        console.log("URL is: " + queryURL);
 
-        //Clear any images currently displayed
+        //Clear any images currently displayed before repopulating
         $("#gifView").html("");
 
         // Creating an AJAX call for the specific button being clicked
@@ -85,56 +82,74 @@ $(document).ready(function(){
           url: queryURL,
           method: "GET"
         }).done(function(response) {
-          //console.log(response);
-          // Storing the rating data from the API
-          //Write out all the contents of the response object.
-   
+  
           //Create another div to contain the gif images 
           var gifPlace = $("<div id='gifView'>");
-          $("#container").append(gifPlace); // position gifView in the container Div
+          // position gifView in the container Div
+          $("#container").append(gifPlace); 
           // $("#container").append(gifPlace);
         
           for (var i=0; i<gifLimit; i++) {
-            //get the rating from the API
-            var rating = response.data[i].rating;
-            //Create an element to display the rating
-            var pRate = $("<p>").text("Rating: " + rating);
-            //Add the rating to gifView div
-            gifPlace.append(pRate);
+            //get the rating from the API and write it to an array.
+            var getRating = response.data[i].rating;
+            ratingArray[i] = getRating;
+          
+            //get the URLs for the still image from the API and write it to an array.
+            var getStillImg = response.data[i].images.fixed_height_small_still.url;
+            stillArray[i] = getStillImg;
             
-            //get the URL for the image from the API
-            var gifImg = response.data[i].images.fixed_height_small_still.url;
-            //create an element to hold the image
-            var image = $("<img>");
-            image.addClass("gif");
-            image.attr("src", gifImg);
-            //Add the image to the gifView div
-            gifPlace.append(image);
+            //get the URLs for the animated images from the API and write it to an array.
+            var getAnimatedImg = response.data[i].images.fixed_height_small.url;
+            animatedArray[i] = getAnimatedImg;
+
+            //Define an array object to contain all the image information
+            imageObj[i] = {    
+              rated: ratingArray[i],
+              still: stillArray[i],
+              animated: animatedArray[i]
+            }            
           } //end for loop
-          //move the populated div to the DOM
+
+      //This section populate the div from the imageObj
+          for (var i=0; i<gifLimit; i++) {
+            console.log("imageObj.rated = " + imageObj[i].rated);
+            console.log("imageObj.still = " + imageObj[i].still); 
+            console.log("imageObj.animated = " + imageObj[i].animated); 
+
+            var rating = imageObj[i].rated;
+            console.log ("rating is ")+ rating;
+            var pRate = $("<span>").text("Rating: " + rating);
+            var stillImg = imageObj[i].still;
+            var image = $("<img id='still'>");
+            image.addClass("gif");
+            image.attr("src", stillImg);
+            gifPlace.append(pRate, image);
+          } //end for loop
           $("#gifView").prepend(gifPlace);
         }); //end AJAX function call
-    } //end function displayGifs
+     } //end function getGifs
+
 
     //************************************************************
     //Create an event handler for images when they are clicked on.
     
-    $(".gif").click(function(){
-      console.log("image was clicked on.");
-
-//    $(".gif").on("click", function() {
+  //  $(".gif").click(function(){  //Note: This does not work with dynamically generated objects.
+      $(document).on('click',[".gif"],function(){  //$(document).on('click',[class],functionname/function(){})
+        console.log("image was clicked on.");
       // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
-      var state = $(this).attr("data-state");
+      //  var state = $(this).attr("data-state");
       // If the clicked image's state is still, update its src attribute to what its data-animate value is.
       // Then, set the image's data-state to animate
       // Else set src to the data-still value
-      if (state === "still") {
+    
+
+    /* if (state === "still") {
         $(this).attr("src", $(this).attr("data-animate"));
         $(this).attr("data-state", "animate");
       } else {
         $(this).attr("src", $(this).attr("data-still"));
         $(this).attr("data-state", "still");
-      } 
+      } */
     });
 
 /*
@@ -150,6 +165,8 @@ $('.gif').click(function(){
 
  // Calling the renderButtons function to display the intial buttons
       renderButtons();
+
+      //define images object
 
 
 });  //end document ready
