@@ -11,22 +11,17 @@ $(document).ready(function(){
   var gifLimit = 10; //number of gif files to retrieve
 
   //Create a new div "buttonsView" to contain the buttons
-  //Assign a variable to a new div element.
   var buttonsDiv = $("<div id='buttonsView'>");
-  //create sample text for testing
-  var titleText = "Click a button to view animaged GIFs!";
+  var titleText = "Click a button to view... absolutely nothing!";
   //create an element to hold the new buttons.
   var p1 = $("<p>").text(titleText);
-  //insert sample text indo new div
   buttonsDiv.append(p1);
-  //insert new div into DOM
   $("#container").prepend(buttonsDiv);
 
 
   // Function for displaying new buttons
   function renderButtons() {
-    // Deleting the existing fish from the div prior to adding new one
-    // (otherwise you will have repeat buttons)
+    // Deleting the existing buttons from the div prior to adding new one
     $("#buttonsView").empty(); 
 
   // Loop through the array of fish species.
@@ -53,16 +48,14 @@ $(document).ready(function(){
         // Grab the value of the input from the textbox and remove any extra spaces from string.
         var newFish = $("#fish-input").val().trim();
         console.log("newFish = " + newFish);
-        // Add the new fish (from the textbox) to the end of the array
         fishArray.push(newFish);
 
-        // Calling renderButtons which handles the processing of our movie array
-//        renderButtons();
+        // Calling renderButtons which handles the processing of our new button
+        renderButtons();
       });
 
       // Adding a click event listener to all button elements with a class of "fishClass"
       $(document).on("click", ".fishClass", getGifs);
-      
 
 // ---------------------------------------------------------------//
 
@@ -74,10 +67,9 @@ $(document).ready(function(){
         var gifRating = "g"; //filters results by the specified rating.
         var queryURL = "http://api.giphy.com/v1/gifs/search?q="+fishClip+"&apikey="+apiKey+"&limit="+gifLimit;
 
-        //Clear any images currently displayed before repopulating
         $("#gifView").html("");
 
-        // Creating an AJAX call for the specific button being clicked
+        // Create an AJAX call for the specific button being clicked
         $.ajax({
           url: queryURL,
           method: "GET"
@@ -85,9 +77,7 @@ $(document).ready(function(){
   
           //Create another div to contain the gif images 
           var gifPlace = $("<div id='gifView'>");
-          // position gifView in the container Div
           $("#container").append(gifPlace); 
-          // $("#container").append(gifPlace);
         
           for (var i=0; i<gifLimit; i++) {
             //get the rating from the API and write it to an array.
@@ -110,63 +100,71 @@ $(document).ready(function(){
             }            
           } //end for loop
 
-      //This section populate the div from the imageObj
+      //This section populates the div from the imageObj
           for (var i=0; i<gifLimit; i++) {
-            console.log("imageObj.rated = " + imageObj[i].rated);
-            console.log("imageObj.still = " + imageObj[i].still); 
-            console.log("imageObj.animated = " + imageObj[i].animated); 
-
+            //assign attributes to display the rating, still, and animated data
             var rating = imageObj[i].rated;
             console.log ("rating is ")+ rating;
             var pRate = $("<span>").text("Rating: " + rating);
+            gifPlace.append(pRate);
+            
             var stillImg = imageObj[i].still;
             var image = $("<img id='still'>");
             image.addClass("gif");
             image.attr("src", stillImg);
-            gifPlace.append(pRate, image);
+            gifPlace.append(image);
+
+            var animatedImg = imageObj[i].animated;
+            var animated =  $("<img id='animated'>") ;
+            animated.addClass("gif");
+            animated.attr("src", animatedImg);
           } //end for loop
           $("#gifView").prepend(gifPlace);
         }); //end AJAX function call
      } //end function getGifs
 
-
-    //************************************************************
     //Create an event handler for images when they are clicked on.
     
-  //  $(".gif").click(function(){  //Note: This does not work with dynamically generated objects.
-      $(document).on('click',[".gif"],function(){  //$(document).on('click',[class],functionname/function(){})
-        console.log("image was clicked on.");
-      // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
-      //  var state = $(this).attr("data-state");
-      // If the clicked image's state is still, update its src attribute to what its data-animate value is.
-      // Then, set the image's data-state to animate
-      // Else set src to the data-still value
-    
+    $(document).on('click',[".gif"],function(){ 
+      //test to see if images <img> id is "still" or "animated"  
+      var source = $("img").attr("src"); // get image's file name.
+      var index = stillArray.indexOf(source); //get pointer to array index
 
-    /* if (state === "still") {
-        $(this).attr("src", $(this).attr("data-animate"));
-        $(this).attr("data-state", "animate");
-      } else {
-        $(this).attr("src", $(this).attr("data-still"));
-        $(this).attr("data-state", "still");
-      } */
+      var status = $(".gif").attr("id"); 
+        if (status === "still") {
+            var newURL = animatedArray[index];
+            $("img").attr("src", newURL);
+        } else {
+            newURL = stillArray[index];
+            $("img").attr("src", newURL);
+        }
     });
+/*So, let me tell you how wonderfully simple this was going to be.
+When you click on an image, I grab the image's "src" property and
+I search the stillArray for that URL to find its index. 
 
-/*
-$('.gif').click(function(){
-  alert("image clicked");
-    var image = new Image();
-       image.src='http://rack.3.mshcdn.com/media/ZgkyMDEyLzEwLzE5LzExXzMzXzMzXzE3Nl9maWxlCnAJdGh1bWIJMTIwMHg    5NjAwPg/462b8072';
-     $('#img').click(function(){
-       $(this).attr('src',image.src);
-     }); 
- });
+Now that I have the index, I can replace the image with the animated version
+by referencing the same index in the animatedArray. 
+
+But, it doesn't work because when you click on an image, you don't get
+THAT image's URL -- You always get the first image (index =0) for some reason. 
+
+The $(this). methods do not seem to work for dynamically rendered elements, along
+with many other things. Would be nice to discuss this in class, since we mostly
+use hard <divs> and code inside the .html page in the classroom. I spent 4 hours
+trying to get an onClick event to work. Slacked it out, and was helped by 
+someone who had the same problem, but found a new way to do the same thing that
+should have worked in the first place!   
+
+This is the 2nd week where I felt like I spent 15 of the 25 hours I invested
+doing the equilavent of typing "2+2" in a calculator and having it come up = 3.
+For a while, you play the "Is it me?" game, but at some point, you just give up
+and conclude that the calculator is whacked and wonder if it isn't too late
+in life to go raise sheep.   
 */
+
 
  // Calling the renderButtons function to display the intial buttons
       renderButtons();
-
-      //define images object
-
 
 });  //end document ready
